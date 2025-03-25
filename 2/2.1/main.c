@@ -20,10 +20,10 @@ int main() {
             int id = getchar() - '0';
             char temp = 0;
             while((temp = getchar()) != '\n') { id *= 10; id += temp - '0'; }
-            int i = 0;
-            for(; i < BUFFER && ids[i] != id; ++i);
+            size_t i = 0;
+            for(; i < arr.size && ids[i] != id; ++i);
             if(ids[i] == id) {
-                removeContact(&arr, id);  
+                arr = removeContact(&arr, id);  
             }
             free(ids);
         }
@@ -33,8 +33,8 @@ int main() {
             int id = getchar() - '0';
             char temp = 0;
             while((temp = getchar()) != '\n') { id *= 10; id += temp - '0'; }
-            int i = 0;
-            for(; i < BUFFER && ids[i] != id; ++i);
+            size_t i = 0;
+            for(; i < arr.size && ids[i] != id; ++i);
             if(ids[i] == id) {
                 printf("Select params to edit:\n[0] - Exit;\n[1] - Name;\n[2] - Surname;\
 \n[3] - Patronymic;\n[4] - Workplace;\n[5] - Email.\n");

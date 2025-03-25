@@ -2,18 +2,14 @@
 #include "header.h"
 
 Users usersInit() {
-
     Users arr;
-    arr.arr = malloc(BUFFER * sizeof(User));
-    for(int i = 0; i < BUFFER; ++i) {
-        arr.arr[i].id = -1;
-    }
+    arr.arr = NULL;
+    arr.size = 0;
     return arr;
-
 }
 
 void clearmem(Users *arr) {
-    for(int i = 0; i < BUFFER; ++i) {
+    for(size_t i = 0; i < arr->size; ++i) {
         free(arr->arr[i].name);
         free(arr->arr[i].surname);
         free(arr->arr[i].patronymic);
@@ -23,93 +19,94 @@ void clearmem(Users *arr) {
     free(arr->arr);
 }
 
+bool isUniqueId(Users *arr, int id) {
+    for (size_t j = 0; j < arr->size; j++) {
+        if (arr->arr[j].id == id) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool addContact(Users *arr) {
-    char symbol;
-    int fields = 0;
-    int i = 0;
-    for(; i < BUFFER && arr->arr[i].name != NULL; ++i);
     srand(time(NULL));
-    bool latch = false;
-    int id = 0;
-    while(!latch) {
-        id = rand() % BUFFER;
-        for(int j = 0; j < BUFFER; j++){
-            if(arr->arr[j].id == id) break;
-            if(j + 1 == BUFFER || arr->arr[j].name == NULL) {
-                latch = true;
-                break;
-            }
-        }
-    }
-    bool err = 0;
-    while(fields < 5 && err != 1) {
-        char *field = malloc(BUFFER * sizeof(char));
+    int id;
+    do {
+        id = rand() % UINT16_MAX;
+    } while (!isUniqueId(arr, id));
+    User user;
+    user.id = id;
+    for (int i = 0; i < 5; ++i) {
+        char *field = malloc(BUFFER);
         int iter = 0;
-        while((symbol = getchar()) != '\n' && iter < BUFFER) field[iter++] = symbol;
-        arr->arr[i].id = id;
-        if(fields == 0) {
-            if(iter == 0) err = 1;
-            else arr->arr[i].name = field;
+        char symbol;
+        while ((symbol = getchar()) != '\n' && iter < BUFFER - 1) {
+            field[iter++] = symbol;
         }
-        else if(fields == 1) {
-            if(iter == 0) err = 1;
-            else arr->arr[i].surname = field;
+        field[iter] = '\0';
+        if (iter == 0 && (i == 0 || i == 1)) {
+            free(field);
+            return 1;
         }
-        else if(fields == 2) arr->arr[i].patronymic = field;
-        else if(fields == 3) arr->arr[i].workplace = field;
-        else if(fields == 4) arr->arr[i].email = field;
-        fields++;
+        switch (i) {
+            case 0: user.name = field; break;
+            case 1: user.surname = field; break;
+            case 2: user.patronymic = field; break;
+            case 3: user.workplace = field; break;
+            case 4: user.email = field; break;
+        }
     }
-    return err;
+    if (arr->size == 0) {
+        arr->arr = malloc(sizeof(User));
+        arr->size = 1;
+    } else {
+        arr->arr = realloc(arr->arr, (arr->size + 1) * sizeof(User));
+        arr->size++;
+    }
+    arr->arr[arr->size-1] = user;
+    return 0;
 }
 
 bool editContact(Users *arr, int id) {
     char choice;
-    int i = 0;
-    for(; arr->arr[i].id != id; i++){
-        if(i + 1 == BUFFER) {;}
-    }
-    void *fields[] = {&arr->arr[i].name, &arr->arr[i].surname, &arr->arr[i].patronymic,
-    &arr->arr[i].workplace, &arr->arr[i].email};
-    while((choice = getchar()) != '0') {
+    size_t iter = 0;
+    for(; iter < arr->size && arr->arr[iter].id != id; ++iter);
+    if(iter == arr->size) return 1;
+    void *fields[] = {&arr->arr[iter].name, &arr->arr[iter].surname, &arr->arr[iter].patronymic,
+    &arr->arr[iter].workplace, &arr->arr[iter].email};
+    while((choice = getchar()) > '0' && choice < '6') {
         char field = choice;
         int counter = 0;
-        if(getchar() != '\n') {
-            while(getchar() != '\n');
-            return 1;
-        }
+        if(getchar() != '\n') return 1;
         while((choice = getchar()) != '\n') {
             (*(char **)fields[(field - '0')-1])[counter++] = choice;
         }
-        printf("Print field to edit (0 - exit): ");
     }
     while(getchar() != '\n');
     return 0;
 }
 
-void removeContact(Users *arr, int id) {
-    int i = 0;
-    for(; i < BUFFER && arr->arr[i].id != id; ++i);
+Users removeContact(Users *arr, int id) {
+    size_t i = 0;
+    for(; i < arr->size && arr->arr[i].id != id; ++i);
     free(arr->arr[i].name);
     free(arr->arr[i].surname);
     free(arr->arr[i].patronymic);
     free(arr->arr[i].workplace);
     free(arr->arr[i].email);
-    arr->arr[i].id = -1;
-    arr->arr[i].name = NULL;
-    arr->arr[i].surname = NULL;
-    arr->arr[i].workplace = NULL;
-    arr->arr[i].email = NULL;
-    if(i == 0) {
-        arr->arr++;
-        arr->arr = realloc(arr->arr, BUFFER * sizeof(User));
+    for(; i < arr->size - 1; ++i) {
+        arr->arr[i] = arr->arr[i+1];
     }
+    Users temp;
+    temp.size = --(arr->size);
+    temp.arr = realloc(arr->arr, arr->size * sizeof(User));
+    return temp;
 }
 
 int *printContacts(Users *arr) {
-    int *ids = malloc(BUFFER * sizeof(int));
+    int *ids = malloc(arr->size * sizeof(int));
     int iter = 0;
-    for(int i = 0; i < BUFFER; ++i) {
+    for(size_t i = 0; i < arr->size; ++i) {
         if(arr->arr[i].name != NULL) {
             ids[iter++] = arr->arr[i].id;
             printf("[%d]: \"%s\", \"%s\", \"%s\", \"%s\", \"%s\"\n",\

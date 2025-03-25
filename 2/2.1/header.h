@@ -24,14 +24,16 @@ typedef struct {
 
 typedef struct {
     User *arr;
+    size_t size;
 } Users;
 
 Users usersInit();
 void clearmem(Users *arr);
 
+bool isUniqueId(Users *arr, int id);
 bool addContact(Users *arr);
 bool editContact(Users *arr, int id);
-void removeContact(Users *arr, int id);
+Users removeContact(Users *arr, int id);
 
 int *printContacts(Users *arr);
 
