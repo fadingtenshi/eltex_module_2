@@ -1,10 +1,10 @@
 
 #include "header.h"
 
-char *digToBit() {
+mode_t digToBit() {
 
     char digits[4];
-    char *result = malloc(STR_BUFFER * sizeof(char));
+    mode_t result = 0;
     int count = 0;
     char symbol = 0;
     while((symbol = getchar()) != '\n') {
@@ -14,13 +14,8 @@ char *digToBit() {
     }
 
     digits[count] = '\0';
-    int number = strtol(digits, NULL, 8);
+    result = strtol(digits, NULL, 8);
 
-    count = 0;
-    for(int i = 8; i >= 0; i--) {
-        result[count++] = (number >> i) & 1 ? '1' : '0';
-    }
-    result[count] = '\0';
     return result;
 
 }

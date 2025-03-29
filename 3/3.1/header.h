@@ -13,8 +13,9 @@
 #include <sys/types.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <errno.h>
 
-char *digToBit();
+mode_t digToBit();
 mode_t numToBit();
 void printModebin(mode_t mode);
 int *getModenum(mode_t mode);
