@@ -1,7 +1,28 @@
 
 #include "header.h"
 
-void generateIP(char **ips, int ip_count) {
+char **allocMatrix(int size) {
+    char **matrix = malloc(sizeof(char*) * size);
+    for(int i = 0; i < size; ++i) {
+        matrix[i] = malloc(sizeof(char) * IPV4_LEN);
+    }
+    return matrix;
+}
+
+void IPs_push(IPs *ipv4s, char *ip) {
+    if(ipv4s->size == 0) {
+        ipv4s->ips = malloc(sizeof(char*) * IPV4_LEN);
+        ipv4s->size++;
+        ipv4s->ips[ipv4s->size - 1] = ip;
+    }
+    else {
+        ipv4s->ips = realloc(ipv4s->ips, sizeof(char*) * (++(ipv4s->size)));
+        ipv4s->ips[ipv4s->size - 1] = ip;
+    }
+}
+
+IPs *generateIP(int ip_count) {
+    IPs *ipv4s = calloc(1, sizeof(IPs));
     struct timeval tv;
     gettimeofday(&tv,NULL);
     srand(tv.tv_usec);
@@ -13,8 +34,9 @@ void generateIP(char **ips, int ip_count) {
             strcat(ip, octet);
             if(j + 1 != 4) strcat(ip, ".");
         }
-        ips[i] = ip;
+        IPs_push(ipv4s, ip);
     }
+    return ipv4s;
 }
 
 unsigned int iptoBit(char *ip) {
@@ -27,22 +49,25 @@ unsigned int masktoBit(int mask) {
     return (0xFFFFFFFF << (32 - mask)) & 0xFFFFFFFF;
 }
 
-int applyMask(char **ips, char *gateway, int mask, int size) {
+IPs *applyMask(IPs *ips, char *gateway, int mask, int size) {
+    IPs *ipv4s_result = calloc(1, sizeof(IPs));
     unsigned int mask_bit = masktoBit(mask);
     unsigned int gateway_bit_masked = iptoBit(gateway) & mask_bit;
-    int count = 0;
     for(int i = 0; i < size; ++i) {
-        unsigned int masked_ip = iptoBit(ips[i]) & mask_bit;
+        unsigned int masked_ip = iptoBit(ips->ips[i]) & mask_bit;
         if(masked_ip == gateway_bit_masked) {
-            count++;
+            char *result_ip = malloc(sizeof(char) * IPV4_LEN);
+            memcpy(result_ip, ips->ips[i], sizeof(IPs));
+            IPs_push(ipv4s_result, result_ip);
         }
     }
-    return count;
+    return ipv4s_result;
 }
 
-void clearmem(char **ptr, int size) {
+void clearmem(IPs *ptr, int size) {
     for(int i = 0; i < size; ++i) {
-        free(ptr[i]);
+        free(ptr->ips[i]);
     }
+    free(ptr->ips);
     free(ptr);
 }

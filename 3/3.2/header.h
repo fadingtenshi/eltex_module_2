@@ -8,10 +8,17 @@
 #include <string.h>
 #include <sys/time.h>
 
-void generateIP(char **ips, int ip_count);
+typedef struct {
+    char **ips;
+    size_t size;
+} IPs;
+
+char **allocMatrix(int size);
+void IPs_push(IPs *ipv4s, char *ip);
+IPs *generateIP(int ip_count);
 unsigned int iptoBit(char *ip);
 unsigned int masktoBit(int mask);
-int applyMask(char **ips, char *gateway, int mask, int size);
-void clearmem(char **ptr, int size);
+IPs *applyMask(IPs *ips, char *gateway, int mask, int size);
+void clearmem(IPs *ptr, int size);
 
 #endif
