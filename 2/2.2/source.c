@@ -31,6 +31,9 @@ double divv(double *numbers) {
     double div = numbers[iter++];
     for(; iter < BUFFER && !isnan(numbers[iter]); ++iter) {
         if(numbers[iter] != 0) div /= numbers[iter];
+        else {
+            return NAN;
+        }
     }
     return div;
 }

@@ -31,7 +31,9 @@ int main() {
                     printf("Invalid input!\n");
                     return 1;
                 }
-                printf("Answer is: %lf\n", ops[i].func(numbers));
+                double number = ops[i].func(numbers);
+                if(isnan(number)) { printf("Division by zero!\n"); }
+                else { printf("Answer is: %lf\n", number); }
                 free(numbers);
             }
         }

@@ -22,7 +22,11 @@ int main() {
             case '1': printf("Answer is: %lf\n", summ(numbers)); break;
             case '2': printf("Answer is: %lf\n", subb(numbers)); break;
             case '3': printf("Answer is: %lf\n", mull(numbers)); break;
-            case '4': printf("Answer is: %lf\n", divv(numbers)); break;
+            case '4': 
+                double number = divv(numbers);
+                if(isnan(number)) { printf("Division by zero!\n"); }
+                else {printf("Answer is: %lf\n", number);}
+                break;
             default: free(numbers); return 1;
         }
         free(numbers);
