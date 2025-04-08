@@ -1,13 +1,12 @@
 #include "header.h"
 
 int main() {
-
-    User *arr = usersInit();
+    Node* root = NULL;
 
     printf("Welcome to phone directory!\n\n");
     char choice = 0;
-    while(choice != '4') {
-        printf("Enter command:\n[1] Add Contact\n[2] Delete Contact\n[3] Edit Contact\n[4] Exit program\n");
+    while(choice != '5') {
+        printf("Enter command:\n[1] Add Contact\n[2] Delete Contact\n[3] Edit Contact\n[4] Print Tree\n[5] Exit program\n");
         choice = getchar();
         while(getchar() != '\n');
         if(choice == '1') {
@@ -31,24 +30,24 @@ int main() {
             if(!latcherr) {
                 char *fieldsPointer[FIELDS_COUNT];
                 for(int i = 0; i < FIELDS_COUNT; ++i) fieldsPointer[i] = fields[i];
-                addContact(arr, fieldsPointer);
+                addContact(&root, fieldsPointer);
             }
         }
         else if(choice == '2') {
             printf("Select id of contact to delete:\n");
-            printContacts(arr);
+            printContacts(root);
             int id = getchar() - '0';
             char temp = 0;
-            while((temp = getchar()) != '\n') { id *= 10; id += temp - '0'; }
-            if(removeContact(&arr, id)) { printf("Invalid input!\n"); }
+            while((temp = getchar()) != '\n') { id = id * 10 + (temp - '0'); }
+            if(removeContact(&root, id)) { printf("Invalid input or contact not found!\n"); }
         }
         else if(choice == '3') {
             printf("Select id of contact to edit:\n");
-            printContacts(arr);
+            printContacts(root);
             int id = getchar() - '0';
             char temp = 0;
-            while((temp = getchar()) != '\n') { id *= 10; id += temp - '0'; }
-            User *user = findNode(arr, id);
+            while((temp = getchar()) != '\n') { id = id * 10 + (temp - '0'); }
+            Node* user = findNode(root, id);
             if(user != NULL) {
                 char fields[FIELDS_COUNT][BUFFER];
                 for(int i = 0; i < FIELDS_COUNT; ++i) {
@@ -60,10 +59,10 @@ int main() {
                         case 4: printf("Enter changed email (empty for no changes): "); break;
                     }
                     int iter = 0;
-                    while((temp = getchar()) != '\n') {
+                    while((temp = getchar()) != '\n' && iter < BUFFER - 1) {
                         fields[i][iter++] = temp;
                     }
-                    if(iter != 0) fields[i][iter] = '\0';
+                    fields[i][iter] = '\0';
                 }
                 char *fieldsPointer[FIELDS_COUNT];
                 for(int i = 0; i < FIELDS_COUNT; ++i) fieldsPointer[i] = fields[i];
@@ -71,8 +70,12 @@ int main() {
             }
             else { printf("User not found!\n"); }
         }
+        else if(choice == '4') {
+            printf("\n");
+            printTreeAsTree(root, 0);
+            printf("\n");
+        }
     }
-    clearList(arr);
+    freeTree(root);
     return 0;
-
 }
